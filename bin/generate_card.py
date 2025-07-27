@@ -4,20 +4,20 @@ import os
 
 from psd_tools import PSDImage
 
-def init_json_data(parent_dir, file_path):
+def init_data(parent_dir, file_path):
     path = os.path.join(parent_dir, file_path)
-    json_data = json.load(path)
-    json_data['dir'] = os.path.dirname(path)
-    return json_data
+    data = json.load(path)
+    data['dir'] = os.path.dirname(path)
+    return data
 
-def get_field(json_data, field, load_files=True):
-    if field in json_data:
-        return json_data[field]
-    parent_data = json_data.get('parent_data', None)
+def get_field(data, field, load_files=True):
+    if field in data:
+        return data[field]
+    parent_data = data.get('parent_data', None)
     if parent_data is None:
-        parent = json_data.get('parent', None)
+        parent = data.get('parent', None)
         if parent is not None:
-            parent_data = init_json_data(json_data['dir'], json_data['parent'])
+            parent_data = init_data(data['dir'], data['parent'])
     if parent_data is not None:
         field_data = get_field(parent_data, field, load_files)
     return None
@@ -31,8 +31,8 @@ def get_layer(current_layer, name, partial=False):
             return layer
     return None
 
-def edit_dice_number(dice_number, json_data):
-    num_dice = len(json_data['dice'])
+def edit_dice_number(dice_number, data):
+    num_dice = len(data['dice'])
 
     dn = None
     found = False
@@ -44,56 +44,56 @@ def edit_dice_number(dice_number, json_data):
     for i in num_dice:
         dice_layer_i = get_layer(dn, str(i + 1), partial=True) # 1-based indexing in psd
         for dice_type in dice_layer_i:
-            dice_type.visible = dice_type.name.lower() == json_data['dice'][i]['type'].lower()
+            dice_type.visible = dice_type.name.lower() == data['dice'][i]['type'].lower()
 
 
-def edit_page_type(page_type, json_data):
+def edit_page_type(page_type, data):
     for t in page_type:
-        t.visible = json_data['type'].lower() == t.name.lower()
+        t.visible = data['type'].lower() == t.name.lower()
 
-def edit_page_cost(page_cost, json_data):
+def edit_page_cost(page_cost, data):
     # Make these invisible; handle later
     get_layer(page_cost, 'Cost Grit').visible = False
     get_layer(page_cost, 'Cost').visible = False
 
-def edit_page_rarity(page_rarity, json_data):
+def edit_page_rarity(page_rarity, data):
     for rarity in page_rarity:
-        if json_data['rarity'] == rarity.name:
+        if data['rarity'] == rarity.name:
             rarity.visible = True
-            edit_page_type(get_layer(page_rarity, 'Card Type'), json_data)
-            edit_page_cost(get_layer(page_rarity, 'Irrelevant Stuff'), json_data)
+            edit_page_type(get_layer(page_rarity, 'Card Type'), data)
+            edit_page_cost(get_layer(page_rarity, 'Irrelevant Stuff'), data)
         else:
             rarity.visible = False
 
-def edit_page_base(page_base, json_data):
-    get_layer(page_base, 'Do Not Delete').visible = json_data['grit']
+def edit_page_base(page_base, data):
+    get_layer(page_base, 'Do Not Delete').visible = data['grit']
     get_layer(page_base, '176m2').visible = False # Remove default image
     # TODO
 
-def edit_combat_page(combat_page, json_data):
+def edit_combat_page(combat_page, data):
     # No need for notes
     get_layer(combat_page, 'Notes', partial=True).visible = False
     # Doing this ourselves in PIL
     get_layer(combat_page, 'Card Text & Dice Detail').visible = False
 
-    edit_dice_number(get_layer(combat_page, 'Number of Dice'), json_data)
-    edit_page_rarity(get_layer(combat_page, 'Card Rarity'), json_data)
-    edit_page_base(get_layer(combat_page, 'Card Base', partial=True), json_data)
+    edit_dice_number(get_layer(combat_page, 'Number of Dice'), data)
+    edit_page_rarity(get_layer(combat_page, 'Card Rarity'), data)
+    edit_page_base(get_layer(combat_page, 'Card Base', partial=True), data)
 
-def edit_page_class(psd, json_data):
+def edit_page_class(psd, data):
     # No support for abno pages yet
     get_layer(psd, 'Abnormality Pages').visible = False
 
     combat_page = get_layer(psd, 'Combat Pages')
     combat_page.visible = True
-    edit_combat_page(combat_page, json_data)
+    edit_combat_page(combat_page, data)
 
 # TODO Need to use layer.visible = True | False + compose(force=True)
 def main(psd_path, json_path)
     psd = PSDImage.open(psd_path)
-    json_data = init_json_data(json_path)
+    data = init_data(json_path)
 
-    edit_page_class(psd, json_data)
+    edit_page_class(psd, data)
 
 def get_args():
     pass # TODO
