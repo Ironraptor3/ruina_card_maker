@@ -4,6 +4,20 @@ import os
 
 from psd_tools import PSDImage
 
+# Constants
+COLOR_TITLE = 0x000000
+COLOR_DESC = 0xffffff
+COLOR_OFFENSE = 0xffb7ce
+COLOR_DEFENSE = 0xa1e3ee
+COLOR_KEYWORD = 0xefd521
+
+TITLE_TEXT_FONT = 'P22 Johnston Underground Regular'
+TITLE_TEXT_SIZE = 40
+DESC_TEXT_FONT = 'NotoSansDisplay-SemiCondensed'
+DESC_TEXT_SIZE = 32
+
+PSD_MD5 = '53ed4a18dbd596add12463898e6a95bd'
+
 def init_data(parent_dir, file_path):
     path = os.path.join(parent_dir, file_path)
     data = json.load(path)
