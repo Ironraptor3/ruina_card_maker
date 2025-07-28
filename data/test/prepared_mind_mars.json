@@ -1,0 +1,22 @@
+{
+    "name" : "Prepared Mind",
+    "cost" : 1,
+    "type" : "melee",
+    "rarity" : "hardcover",
+
+    "grit" : true,
+    "art" : "./prepared_mind_mars.jpg",
+
+    "dice" : [
+        {
+            "type" : "block",
+            "range" : "2-4",
+            "effect" : ""
+        },
+        {
+            "type" : "slash",
+            "range" : "2-6",
+            "effect" : ""
+        }
+    ]
+}
