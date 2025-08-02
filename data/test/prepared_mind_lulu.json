@@ -1,0 +1,16 @@
+{
+    "parent" : "./prepared_mind_mars.json",
+    "rarity" : "paperback",
+    "art" : "./prepared_mind_lulu.jpg",
+    "dice" : [
+        {
+            "type" : "block",
+            "range" : "1-6",
+            "effect" : "{ClashWin} Gain 1 Endurance next Scene"
+        },
+        {
+            "type" : "blunt",
+            "range" : "4-5"
+        }
+    ]
+}

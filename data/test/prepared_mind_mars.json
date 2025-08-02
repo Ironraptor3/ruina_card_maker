@@ -11,12 +11,11 @@
         {
             "type" : "block",
             "range" : "2-4",
-            "effect" : ""
+            "effect" : "{ClashWin} Gain 1 Endurance next Scene"
         },
         {
             "type" : "slash",
-            "range" : "2-6",
-            "effect" : ""
+            "range" : "2-6"
         }
     ]
 }
