@@ -1,0 +1,25 @@
+{
+    "name" : "Degraded Shockwave",
+    "cost" : 5,
+    "type" : "mass",
+    "rarity" : "Objet D'Art",
+    "grit" : true,
+    "art" : "./degraded_shockwave.jpg",
+
+    "preamble" : "{individual} {use} Give 3 {protection} to all allies this Scene",
+    "dice" : [
+        {
+            "type" : "blunt",
+            "range" : "3-8"
+        },
+        {
+            "type" : "blunt",
+            "range" : "3-8"
+        },
+        {
+            "type" : "blunt",
+            "range" : "4-9",
+            "effect" : "{hit} Inflict 1 {feeble} this Scene"
+        }
+    ]
+}

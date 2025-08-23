@@ -1,0 +1,26 @@
+{
+    "name" : "Spread Out!",
+    "cost" : 3,
+    "type" : "melee",
+    "rarity" : "Objet D'Art",
+    "grit" : true,
+    "art" : "./sunshower_heathcliff_ut.png",
+
+    "preamble" : "{use} Gain 6 {sinking} and +3 {sinking} Count",
+    "dice" : [
+        {
+            "type" : "pierce",
+            "range" : "12-3{d4}",
+            "effect" : "{hit} If the roll was <= 6, Inflict 1 {paralysis} next Scene"
+        },
+        {
+            "type" : "pierce",
+            "range" : "12-2{d6}"
+        },
+        {
+            "type" : "pierce",
+            "range" : "12-{d12}",
+            "effect" : "{hit} Inflict 5 {rupture}{br}If the roll was <= 5, Inflict 1 {fragile} next Scene"
+        }
+    ]
+}

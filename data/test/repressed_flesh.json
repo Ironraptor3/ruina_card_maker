@@ -1,0 +1,30 @@
+{
+    "name" : "Repressed Flesh",
+    "cost" : 3,
+    "type" : "melee",
+    "rarity" : "Objet D'Art",
+    "grit" : true,
+    "art" : "./repressed_flesh.jpg",
+
+    "preamble" : "{use} Draw 1 page",
+    "dice" : [
+        {
+            "type" : "block",
+            "range" : "4-7"
+        },
+        {
+            "type" : "blunt",
+            "range" : "4-9",
+            "effect" : "Reduce Power of target's current Defensive die by 3"
+        },
+        {
+            "type" : "blunt",
+            "range" : "4-9",
+            "effect" : "{hit} Deal 3 Stagger damage to target"
+        },
+        {
+            "type" : "blunt_counter",
+            "range" : "3-7"
+        }
+    ]
+}

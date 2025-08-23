@@ -1,0 +1,258 @@
+{
+    "strength" : {
+        "text" : {
+            "content" : "Strength"
+        },
+        "image": {
+            "path" : "./limbus/25px-Attack_Power_Up.webp"
+        }
+    },
+    "feeble" : {
+        "text" : {
+            "content" : "Feeble"
+        },
+        "image": {
+            "path" : "./limbus/25px-Attack_Power_Down.webp"
+        }
+    },
+    "endurance" : {
+        "text" : {
+            "content" : "Endurance"
+        },
+        "image": {
+            "path" : "./limbus/25px-Defense_Power_Up.webp"
+        }
+    },
+    "disarm" : {
+        "text" : {
+            "content" : "Disarm"
+        },
+        "image": {
+            "path" : "./limbus/25px-Defense_Power_Down.webp"
+        }
+    },
+    "haste" : {
+        "text" : {
+            "content" : "Haste"
+        },
+        "image": {
+            "path" : "./limbus/25px-Haste.webp"
+        }
+    },
+    "bind" : {
+        "text" : {
+            "content" : "Bind"
+        },
+        "image": {
+            "path" : "./limbus/25px-Bind.webp"
+        }
+    },
+    "fragile" : {
+        "text" : {
+            "content" : "Fragile"
+        },
+        "image": {
+            "path" : "./limbus/25px-Fragile.webp"
+        }
+    },
+    "protection" : {
+        "text" : {
+            "content" : "Protection"
+        },
+        "image": {
+            "path" : "./limbus/25px-Protection.webp"
+        }
+    },
+    "paralysis" : {
+        "text" : {
+            "content" : "Paralysis"
+        },
+        "image": {
+            "path" : "./limbus/25px-Paralyze.webp"
+        }
+    },
+    "burn" : {
+        "text" : {
+            "content" : "Burn",
+            "color" : "#893027" 
+        },
+        "image": {
+            "path" : "./limbus/25px-Burn.webp"
+        }
+    },
+    "bleed" : {
+        "text" : {
+            "content" : "Bleed",
+            "color" : "#B16632"
+        },
+        "image": {
+            "path" : "./limbus/25px-Bleed.webp"
+        }
+    },
+    "tremor" : {
+        "text" : {
+            "content" : "Tremor",
+            "color" : "#E18800"
+        },
+        "image": {
+            "path" : "./limbus/25px-Tremor.webp"
+        }
+    },
+    "tremorburst" : {
+        "text" : {
+            "content" : "Tremor Burst",
+            "color" : "#E18800"
+        },
+        "image" : {
+            "path" : "./limbus/25px-Tremor_Burst.webp"
+        }
+    },
+    "rupture" : {
+        "text" : {
+            "content" : "Rupture",
+            "color" : "#5D8329" 
+        },
+        "image": {
+            "path" : "./limbus/25px-Rupture.webp"
+        }
+    },
+    "sinking" : {
+        "text" : {
+            "content" : "Sinking",
+            "color" : "#2B6576"
+        },
+        "image": {
+            "path" : "./limbus/25px-Sinking.webp"
+        }
+    },
+    "poise" : {
+        "text" : {
+            "content" : "Poise",
+            "color" : "#1A518C"
+        },
+        "image": {
+            "path" : "./limbus/25px-Poise.webp"
+        }
+    },
+    "charge" : {
+        "text" : {
+            "content" : "Charge",
+            "color" : "#7E4F9C"
+        },
+        "image": {
+            "path" : "./limbus/25px-Charge.webp"
+        }
+    },
+
+    "clashwin" : {
+        "text" : {
+            "content" : "On Clash Win"
+        }
+    },
+    "clashlose" : {
+        "text" : {
+            "content" : "On Clash Lose"
+        }
+    },
+    "clashstart" : {
+        "text" : { 
+            "content" : "Start of Clash"
+        }
+    },
+    "hit" : {
+        "text" : {
+            "content" : "On Hit"
+        }
+    },
+    "use" : {
+        "text" : {
+            "content" : "On Use"
+        }
+    },
+    "combatstart" : {
+        "text" : {
+            "content" : "On Combat Start"
+        }
+    },
+    "singleton" : {
+        "text" : {
+            "content" : "Singleton"
+        }
+    },
+    "individual" : {
+        "text" : {
+            "content" : "Mass-Individual\n"
+        }
+    },
+    "summation" : {
+        "text" : {
+            "content" : "Mass-Summation\n"
+        }
+    },
+    "exhaust" : {
+        "text" : {
+            "content": "Single-use"
+        }
+    },
+
+    "br" : {
+        "text" : {
+            "content" : "\n"
+        }
+    },
+
+    "d4" : {
+        "text" : {
+            "content" : "D4"
+        },
+        "image" : {
+            "path" : "./tabletop/d4.png",
+            "convert_color" :  true
+        }
+    },
+    "d6" : {
+        "text" : {
+            "content" : "D6"
+        },
+        "image" : {
+            "path" : "./tabletop/d6.png",
+            "convert_color" :  true
+        }
+    },
+    "d8" : {
+        "text" : {
+            "content" : "D8"
+        },
+        "image" : {
+            "path" : "./tabletop/d8.png",
+            "convert_color" :  true
+        }
+    },
+    "d10" : {
+        "text" : {
+            "content" : "D10"
+        },
+        "image" : {
+            "path" : "./tabletop/d10.png",
+            "convert_color" :  true
+        }
+    },
+    "d12" : {
+        "text" : {
+            "content" : "D12"
+        },
+        "image" : {
+            "path" : "./tabletop/d12.png",
+            "convert_color" :  true
+        }
+    },
+    "d20" : {
+        "text" : {
+            "content" : "D20"
+        },
+        "image" : {
+            "path" : "./tabletop/d20.png",
+            "convert_color" :  true
+        }
+    }
+}

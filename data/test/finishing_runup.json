@@ -1,0 +1,25 @@
+{
+    "name" : "Finishing Runup",
+    "cost" : 3,
+    "type" : "melee",
+    "rarity" : "limited",
+    "grit" : true,
+    "art" : "./rosespanner_meursault_ut.png",
+
+    "preamble" : "{combatstart} Gain 1 {strength} if the Target has 10+ {tremor} Count{br}Dice on this page gain:{br}{hit} Inflict 1 {tremor}, if the roll was >= 5, Gain +2 {charge} Count",
+    "dice" : [
+        {
+            "type" : "blunt",
+            "range" : "{d8}"
+        },
+        {
+            "type" : "blunt",
+            "range" : "{d10}"
+        },
+        {
+            "type" : "blunt",
+            "range" : "{d20}",
+            "effect" : "{hit} Trigger {tremorburst} (3), then spend 10 {charge} Count to {tremorburst} (0)"
+        }
+    ]
+}

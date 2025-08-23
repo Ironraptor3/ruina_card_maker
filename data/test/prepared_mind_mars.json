@@ -11,7 +11,7 @@
         {
             "type" : "block",
             "range" : "2-4",
-            "effect" : "{ClashWin} Gain 1 Endurance next Scene"
+            "effect" : "{clashwin} Gain 1 {endurance} next Scene"
         },
         {
             "type" : "slash",

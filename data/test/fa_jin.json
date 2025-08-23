@@ -1,0 +1,22 @@
+{
+    "name" : "Fa Jin",
+    "cost" : 1,
+    "type" : "melee",
+    "rarity" : "hardcover",
+    "grit" : true,
+    "art" : "./cinq_east_donquixote.png",
+
+    "preamble" : "{combatstart} Gain 1 {strength} * (Slot Speed - Target Slot Speed); max 2{br}{use}Gain +3 {poise} Count",
+    "dice" : [
+        {
+            "type" : "pierce",
+            "range" : "{d4}",
+            "effect" : "{hit} Inflict 1 {burn}"
+        },
+        {
+            "type" : "pierce",
+            "range" : "{d4}",
+            "effect" : "{hit} Inflict 1 {burn}. If the dice roll was 4 or higher, Inflict +1 {burn} Count"
+        }
+    ]
+}
