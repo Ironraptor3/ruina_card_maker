@@ -1,2 +1,6 @@
-*.psd
 *.swp
+
+*.pyc
+*.pyo
+
+output/

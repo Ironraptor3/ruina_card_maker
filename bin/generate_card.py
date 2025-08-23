@@ -1,6 +1,8 @@
 import argparse
+from enum import Enum
 import hashlib
 import json
+from math import ceil
 import os
 import sys
 
@@ -8,6 +10,7 @@ import PIL
 import PIL.ImageFont
 import PIL.Image
 import PIL.ImageDraw
+import PIL.ImageOps
 
 from psd_tools import PSDImage
 from psd_tools.api.layers import PixelLayer
@@ -15,26 +18,37 @@ from psd_tools.compression import Compression
 
 # Constants
 COLOR_TITLE = "#000000"
+COLOR_COST = COLOR_TITLE
 COLOR_DESC = "#ffffff"
 COLOR_OFFENSE = "#ffb7ce"
 COLOR_DEFENSE = "#a1e3ee"
 COLOR_KEYWORD = "#efd521"
+COLORIZE_MIDPOINT = 127
 
 TITLE_TEXT_FONT = 'P22 Johnston Underground Regular.ttf'
 TITLE_TEXT_SIZE = 40
 DESC_TEXT_FONT = 'NotoSansDisplay-SemiCondensed.ttf'
 DESC_TEXT_SIZE = 32
-COST_TEXT_FONT = 'P22 Johnston Underground Regular'
+COST_TEXT_FONT = 'P22 Johnston Underground Regular.ttf'
 COST_TEXT_SIZE = 146
 
 TEXT_LEFT = 550
-TEXT_UP = 100
+TEXT_UP = 65
 TEXT_RIGHT = 950
-#TEXT_DOWN
+TEXT_SPACER = 15
+DICE_SPACER = 10
 
 TITLE_ANGLE_DEG = 11
 TITLE_CENTER_X = 250
 TITLE_CENTER_Y = 200
+
+COST_X = 80
+COST_Y = 39
+
+MINI_UP = 20
+MINI_LEFT = 20
+MINI_RIGHT = 520
+MINI_DOWN = 700
 
 PSD_NAME = 'lor_template.psd'
 PSD_MD5 = '53ed4a18dbd596add12463898e6a95bd'
@@ -46,24 +60,30 @@ def init_data(parent_dir, file_path):
     data['dir'] = os.path.dirname(path)
     return data
 
-def get_field(data, field, relative=False):
+# Perhaps there could be a better interface for the additional paths...
+def get_field(data, field, relative=False, additional_paths=[]):
+    if field not in data:
+        # Resolve parent
+        parent_data = data.get('parent_data', None)
+        if parent_data is None:
+            parent = data.get('parent', None)
+            if parent is not None:
+                parent_data = init_data(data['dir'], parent)
+
+        if parent_data is not None:
+            field_data = get_field(parent_data, field, relative)
+            if field_data is not None and relative:
+                field_data = os.path.join(os.path.dirname(data['parent']), field_data)
+            data[field] = field_data
+
     if field in data:
-        if relative:
-            return os.path.join(data['dir'], data[field])
-        return data[field]
+        result = data[field]
+        while result is not None and additional_paths:
+            result = result.get(additional_paths.pop(0), None)
 
-    parent_data = data.get('parent_data', None)
-    if parent_data is None:
-        parent = data.get('parent', None)
-        if parent is not None:
-            parent_data = init_data(data['dir'], parent)
-
-    if parent_data is not None:
-        field_data = get_field(parent_data, field, relative)
-        if field_data is not None and relative:
-            field_data = os.path.join(os.path.dirname(data['parent']), field_data)
-        data[field] = field_data
-        return field_data
+        if result is not None and relative:
+            return os.path.join(data['dir'], result)
+        return result
 
     return None
 
@@ -95,7 +115,7 @@ def edit_dice_number(dice_number, data):
         search_type = get_field(data, 'dice')[i]['type'].lower()
 
         for dice_type in dice_layer_i:
-            if search_type == dice_type.name.lower():
+            if search_type == dice_type.name.lower().replace(' ', '_'):
                 found_type = True
                 dice_type.visible = True
             else:
@@ -135,17 +155,19 @@ def edit_page_rarity(page_rarity, data):
     assert found, 'No such page rarity: %s' % search
 
 def edit_page_base(psd, page_base, data):
-    get_layer(page_base, 'Do Not Delete').visible = get_field(data, 'grit') # This is the grit
+    # Not recommended to be false at the moment
+    get_layer(page_base, 'Do Not Delete').visible = get_field(data, 'grit') is not False # This is the grit
+
     sample_img_layer = get_layer(page_base, '176m2')
     sample_img_layer.visible = False # Remove default image
 
-    bbox = sample_img_layer.bbox # TODO (Future); I don't like this bbox
+    bbox = sample_img_layer.bbox
     bbox_width = bbox[2] - bbox[0]
     bbox_height = bbox[3] - bbox[1]
 
     art_path = get_field(data, 'art', relative=True)
     with PIL.Image.open(art_path) as art:
-
+        '''
         if art.width != bbox_width or art.height != bbox_height:
             print('WARN: dimensions for %s does not fit ( is %dx%d, expected %dx%d );' % (art_path,
                     art.width,
@@ -153,10 +175,11 @@ def edit_page_base(psd, page_base, data):
                     bbox_width,
                     bbox_height),
                     file=sys.stderr)
-
+        '''
         # Always resize to fit width
+        #NOTE Could check to see if the ratio is about equal, then scale it in a different way (TODO?)
         if art.width != bbox_width:
-            art_ratio = (art.height ) / ( art.width )
+            art_ratio = art.height / art.width
             target_height =  int( bbox_width * art_ratio )
 
             art = art.resize( (bbox_width, target_height),
@@ -211,13 +234,233 @@ def add_title(img, data):
 
     return PIL.Image.alpha_composite( img, text_layer )
 
-def add_cost( img, data ):
-    return img # TODO
+def add_cost( asset_path, img, data ):
+    draw = PIL.ImageDraw.Draw( img )
+    font = PIL.ImageFont.truetype( COST_TEXT_FONT, COST_TEXT_SIZE )
 
-def add_text( img, data ):
-    return img # TODO
+    cost_grit_path, cost_grit_stroke_fill = {
+            'paperback' : ('cost_grit_paperback.png', '#9FE195'),
+            'hardcover' : ('cost_grit_hardcover.png', '#9FC3EF'),
+            'limited' : ('cost_grit_limited.png', '#B78BE5'),
+            "objet d'art" : ('cost_grit_objet.png', '#FFCB69'),
+            'e.g.o' : ('cost_grit_ego.png', '#FFFFDB'),
+            }[get_field(data, 'rarity').lower()]
 
-def main(data_path, output_path, asset_path):
+    cost_grit_path = os.path.join( asset_path, 'cost_grit', cost_grit_path )
+            
+    draw.text( (COST_X, COST_Y),
+        str(get_field(data, 'cost')),
+        font=font,
+        fill=COLOR_COST,
+        stroke_width=5,
+        stroke_fill=cost_grit_stroke_fill )
+
+    if get_field( data, 'grit' ) is not False:
+        img.alpha_composite( PIL.Image.open(cost_grit_path).convert('RGBA') ) 
+
+    return img
+
+class KeywordData(Enum):
+    REGULAR = 0
+    SPECIAL = 1
+    IMAGE = 2
+    BREAK = 3
+
+def get_keywords( text, keyword_data ):
+    result = []
+    while True:
+        start = text.find('{')
+        end = text.find('}')
+
+        if start < 0 or end < 0:
+            if len(text) != 0:
+                result += [ (KeywordData.REGULAR, word + ' ') for word in text.split() ]
+            return result
+        else:
+            if start > 0:
+                result += [ (KeywordData.REGULAR, word + ' ') for word in text[:start].split() ]
+
+            kw = text[start + 1:end]
+            kw_data = get_field( keyword_data, kw )
+            if 'image' in kw_data:
+                kw_img = PIL.Image.open( get_field(keyword_data,
+                        kw,
+                        relative=True,
+                        additional_paths=['image', 'path']) )
+                kw_cc = kw_data['image'].get( 'convert_color', False )
+                result.append( (KeywordData.IMAGE, kw_img, kw_cc) )
+
+            if 'text' in kw_data:
+                text_content = kw_data['text']['content']
+                text_color = kw_data['text'].get('color', None)
+                result += [ (KeywordData.SPECIAL, word + ' ', text_color)
+                        for word in text_content.split() ]
+                # Kind of hacky- needed for certain special keywords e.g. summation
+                if text_content.endswith('\n'):
+                    result += [ (KeywordData.BREAK,) ]
+            text = text[end + 1:]
+
+def draw_keywords( keywords, draw, font, img=None, position=(0,0), default_color=COLOR_DESC, query_width=True ):
+    width = 0
+    font_ascent, font_descent = font.getmetrics()
+
+    for kw in keywords:
+        kw_type = kw[0]
+        if kw_type == KeywordData.BREAK:
+            continue
+        if kw_type == KeywordData.IMAGE:
+            data_img, data_cc = kw[1:]
+            if not query_width:
+                if data_cc:
+                    mask = data_img.getchannel('A')
+                    data_img = PIL.ImageOps.grayscale(data_img)
+                    data_img = PIL.ImageOps.colorize(data_img,
+                            black='black',
+                            mid=default_color,
+                            white='white',
+                            midpoint=COLORIZE_MIDPOINT)
+                    data_img = data_img.convert('RGBA')
+                    data_img.putalpha(mask)
+
+                # Resize to fit text height
+                if data_img.height > font_ascent:
+                    # Can be silent about this
+                    img_ratio = data_img.width / data_img.height
+                    target_width = int( img_ratio * font_ascent )
+                    data_img = data_img.resize( (target_width, font_ascent),
+                            resample=PIL.Image.Resampling.LANCZOS )
+                # Center it vertically
+                img_y = position[1] + ( (font_ascent + font_descent) // 2 ) - ( data_img.height // 2 )
+                # Draw
+                img.alpha_composite( data_img,
+                    dest=( position[0] + width, img_y ) )
+
+            width += data_img.width
+        else:
+            text = None
+            color = None
+            if kw_type == KeywordData.REGULAR:
+                text = kw[1]
+                color = default_color
+            else:
+                text, color = kw[1:]
+                if color is None:
+                    color = COLOR_KEYWORD
+            if not query_width:
+                draw.text( ( position[0] + width, position[1]),
+                        text,
+                        font=font,
+                        fill=color )
+            width += int( ceil(draw.textlength( text, font )) )
+    return width
+
+def wrap_keywords( draw, font, keywords, width ):
+    wrapped = []
+    current = []
+
+    for kw in keywords:
+        if kw[0] == KeywordData.BREAK:
+            if len(current) != 0:
+                wrapped.append(current)
+                current = []
+            continue
+
+        if len(current) == 0:
+            delta = [ kw ]
+        else:
+            delta = current + [ kw ]
+
+        if draw_keywords( delta, draw, font ) > width:
+            if len(current) == 0:
+                wrapped.append(delta)
+            else:
+                wrapped.append(current)
+                current = [ kw ]
+        else:
+            current = delta
+
+    if len(current) != 0:
+        wrapped.append(current)
+
+    return wrapped
+
+def add_text( asset_path, keyword_data, img, data ):
+    draw = PIL.ImageDraw.Draw( img )
+    font = PIL.ImageFont.truetype( DESC_TEXT_FONT, DESC_TEXT_SIZE )
+    font_ascent, font_descent = font.getmetrics()
+
+    # First, add the preamble, if it exists
+    preamble = get_field( data, 'preamble' )
+    current_offset_y = TEXT_UP
+    if preamble:
+        preamble = get_keywords( preamble, keyword_data )
+        preamble = wrap_keywords( draw, font, preamble, TEXT_RIGHT - TEXT_LEFT )
+        for keywords in preamble:
+            draw_keywords( keywords,
+                    draw,
+                    font,
+                    img=img,
+                    position=( TEXT_LEFT, current_offset_y ),
+                    default_color=COLOR_DESC,
+                    query_width=False )
+            current_offset_y += font_ascent
+        current_offset_y += DICE_SPACER
+
+    # Then add all the dice
+    for dice in get_field( data, 'dice' ):
+        dice_type = dice['type'].lower()
+        if dice_type in ['block', 'block_counter', 'evade', 'evade_counter']:
+            dice_color = COLOR_DEFENSE
+        else:
+            dice_color = COLOR_OFFENSE
+
+        dice_img_path = os.path.join( asset_path, 'ruina', dice_type + '.png' )
+        dice_img = PIL.Image.open( dice_img_path )
+
+        height = 0
+        dice_range = get_keywords( dice['range'], keyword_data )
+        dice_effect = dice.get('effect', None)
+        if dice_effect:
+            dice_effect = get_keywords( dice_effect, keyword_data )
+            effect_offset_x = dice_img.width + draw_keywords( dice_range, draw, font ) + TEXT_SPACER + TEXT_LEFT
+            dice_effect = wrap_keywords( draw,
+                    font,
+                    dice_effect,
+                    TEXT_RIGHT - effect_offset_x )
+            for keywords in dice_effect:
+                draw_keywords( keywords,
+                        draw,
+                        font,
+                        img=img,
+                        position=( effect_offset_x, current_offset_y + height ),
+                        default_color=dice_color,
+                        query_width=False )
+                height += font_ascent
+        else:
+            if font_ascent > dice_img.height:
+                height = font_ascent
+            else:
+                height = dice_img.height
+
+        # Draw range
+        draw_keywords( dice_range,
+            draw,
+            font,
+            img=img,
+            position=(dice_img.width + TEXT_LEFT,
+            current_offset_y + (height // 2) - ( (font_ascent + font_descent) // 2)),
+            default_color=dice_color,
+            query_width=False )
+
+        # Draw dice
+        img.alpha_composite( dice_img,
+                dest=(TEXT_LEFT, current_offset_y + (height // 2) - (dice_img.height // 2)) )
+
+        current_offset_y += height + DICE_SPACER
+
+    return img
+
+def main(data_path, output_path, asset_path, keyword_path, is_mini=False):
     psd_path = os.path.join(asset_path, PSD_NAME)
     with open(psd_path, 'rb') as check_psd:
         check_md5 = hashlib.file_digest(check_psd, 'md5').hexdigest()
@@ -227,6 +470,7 @@ def main(data_path, output_path, asset_path):
                 PSD_MD5)
     psd = PSDImage.open(psd_path)
     data = init_data('', data_path)
+    keyword_data = init_data('', keyword_path)
 
     # Toggle layers
     edit_page_class(psd, data)
@@ -234,9 +478,13 @@ def main(data_path, output_path, asset_path):
     # Force redraws the psd instead of grabbing from the cache / buf
     img = psd.composite(force=True)
 
-    img = add_title(img, data)
-    img = add_cost(img, data)
-    img = add_text(img, data)
+    img = add_title( img, data )
+    img = add_cost( asset_path, img, data )
+
+    if is_mini:
+        img = img.crop( (MINI_LEFT, MINI_UP, MINI_RIGHT, MINI_DOWN) )
+    else:
+        img = add_text( asset_path, keyword_data, img, data)
 
     img.save(output_path, format='PNG') # Finally, output to png
 
@@ -244,8 +492,12 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('data_path', type=str, help='Path to data to create a card')
     parser.add_argument('output_path', type=str, help='Path to output (ought to be a png file)')
+    parser.add_argument('-m', '--mini', action='store_true', default=False,
+            help='A mini card (just the cover)')
     parser.add_argument('-a', '--asset-path', type=str, default=None,
             help='Path to the assets folder. Defaults to ../assets (relative to this script)')
+    parser.add_argument('-k', '--keyword-path', type=str, default=None,
+            help='Path to keywords JSON. Defaults to ../assets/keywords.json (also relative)')
     args = parser.parse_args()
 
     # As stated in the help text, `<scriptdir>/../assets/`
@@ -254,8 +506,13 @@ def get_args():
             os.path.dirname(sys.argv[0]),
             '..',
             'assets')
-
-    return (args.data_path, args.output_path, args.asset_path)
+    if args.keyword_path is None:
+        args.keyword_path = os.path.join(
+            os.path.dirname(sys.argv[0]),
+            '..',
+            'assets',
+            'keywords.json')
+    return (args.data_path, args.output_path, args.asset_path, args.keyword_path, args.mini)
 
 if __name__ == '__main__':
     main(*get_args())
