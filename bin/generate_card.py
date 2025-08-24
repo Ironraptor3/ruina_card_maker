@@ -70,6 +70,7 @@ def get_field(data, field, relative=False, additional_paths=[]):
             if parent is not None:
                 parent_data = init_data(data['dir'], parent)
 
+        # If a parent exists, try to get data from it
         if parent_data is not None:
             field_data = get_field(parent_data, field, relative)
             if field_data is not None and relative:
@@ -100,6 +101,8 @@ def edit_dice_number(dice_number, data):
     num_dice = len(get_field(data, 'dice'))
 
     found_num = None
+
+    # Get the layer with the proper number of dice
     for dn in dice_number:
         if num_dice == int(dn.name.split()[0]):
             dn.visible = True
@@ -109,6 +112,7 @@ def edit_dice_number(dice_number, data):
 
     assert found_num is not None, 'Invalid number of dice on page: %d' % num_dice
 
+    # Set the correct type for each of these dice
     for i in range(num_dice):
         dice_layer_i = get_layer(found_num, str(i + 1), partial=True) # 1-based indexing in psd
         found_type = False
@@ -155,7 +159,7 @@ def edit_page_rarity(page_rarity, data):
     assert found, 'No such page rarity: %s' % search
 
 def edit_page_base(psd, page_base, data):
-    # Not recommended to be false at the moment
+    # Not recommended to be false at the moment if not using the `-m` option
     get_layer(page_base, 'Do Not Delete').visible = get_field(data, 'grit') is not False # This is the grit
 
     sample_img_layer = get_layer(page_base, '176m2')
@@ -167,15 +171,6 @@ def edit_page_base(psd, page_base, data):
 
     art_path = get_field(data, 'art', relative=True)
     with PIL.Image.open(art_path) as art:
-        '''
-        if art.width != bbox_width or art.height != bbox_height:
-            print('WARN: dimensions for %s does not fit ( is %dx%d, expected %dx%d );' % (art_path,
-                    art.width,
-                    art.height,
-                    bbox_width,
-                    bbox_height),
-                    file=sys.stderr)
-        '''
         # Always resize to fit width
         #NOTE Could check to see if the ratio is about equal, then scale it in a different way (TODO?)
         if art.width != bbox_width:
@@ -228,6 +223,8 @@ def add_title(img, data):
             font=font,
             anchor='ms',
             fill=COLOR_TITLE )
+
+    # Slightly rotate the text to fix the banner
     text_layer = text_layer.rotate( TITLE_ANGLE_DEG,
             resample=PIL.Image.Resampling.BILINEAR,
             center=center )
@@ -267,21 +264,36 @@ class KeywordData(Enum):
     BREAK = 3
 
 def get_keywords( text, keyword_data ):
+    '''
+    Gets an array of regular text interwoven with keywords + metadata
+
+    @param text the text to get keywords from
+    @param keyword_data a dictionary object obtained from an `init_data` call
+    @return An array with tuple objects, where the first element is a `KeywordData` enum.
+    This contextualizes the other elements of the tuple.
+    For ease, all text is broken up by splitting on whitespace (to enable word wrapping later)
+    '''
     result = []
     while True:
         start = text.find('{')
         end = text.find('}')
 
+        # No more keywords, the rest is plain text
         if start < 0 or end < 0:
             if len(text) != 0:
                 result += [ (KeywordData.REGULAR, word + ' ') for word in text.split() ]
             return result
         else:
+            # Keyword found
+
+            # Append the text before as plain text
             if start > 0:
                 result += [ (KeywordData.REGULAR, word + ' ') for word in text[:start].split() ]
 
             kw = text[start + 1:end]
             kw_data = get_field( keyword_data, kw )
+            assert kw_data is not None, 'The keyword "%s" was not found in the keyword dictionary!' % kw
+
             if 'image' in kw_data:
                 kw_img = PIL.Image.open( get_field(keyword_data,
                         kw,
@@ -295,12 +307,24 @@ def get_keywords( text, keyword_data ):
                 text_color = kw_data['text'].get('color', None)
                 result += [ (KeywordData.SPECIAL, word + ' ', text_color)
                         for word in text_content.split() ]
+
                 # Kind of hacky- needed for certain special keywords e.g. summation
                 if text_content.endswith('\n'):
                     result += [ (KeywordData.BREAK,) ]
             text = text[end + 1:]
 
 def draw_keywords( keywords, draw, font, img=None, position=(0,0), default_color=COLOR_DESC, query_width=True ):
+    '''
+    Draws (or tests the drawing of) a keyword array, returned by `get_keywords`
+
+    @param keywords an array of keywords, returned by `get_keywords`
+    @param draw a PIL.ImageDraw instance
+    @param font the font to draw in
+    @param img Optional (mandatory if `query_width` is False) the image to draw on
+    @param position Optional (mandatory if `query_width` is False) the offset to draw on the image
+    @param default_color Optional (mandatory if `query_width` is False) the default color of the text and color converted images
+    @param query_width Optional. If True (default), returns the width in pixels that this function requires. If False, actually draws.
+    '''
     width = 0
     font_ascent, font_descent = font.getmetrics()
 
@@ -355,6 +379,17 @@ def draw_keywords( keywords, draw, font, img=None, position=(0,0), default_color
     return width
 
 def wrap_keywords( draw, font, keywords, width ):
+    '''
+    Wraps an array of keywords (returned by `get_keywords`) into a 2D array.
+    Each entry of the 2D array represents a single line which fits in the specified width.
+
+    @param draw a PIL.ImageDraw instance
+    @param font the font to draw in
+    @param keywords an array of keyworsd, returne by `get_keywords`
+    @param width the width to perform word wrap on.
+
+    @return a 2D array of keywords
+    '''
     wrapped = []
     current = []
 
@@ -370,7 +405,9 @@ def wrap_keywords( draw, font, keywords, width ):
         else:
             delta = current + [ kw ]
 
+        # Use `draw_keywords` to query the width of the next (delta) addition
         if draw_keywords( delta, draw, font ) > width:
+            # Always draw at least 1 keyword element, otherwise we are stuck
             if len(current) == 0:
                 wrapped.append(delta)
             else:
@@ -379,6 +416,7 @@ def wrap_keywords( draw, font, keywords, width ):
         else:
             current = delta
 
+    # Don't forget the last line!
     if len(current) != 0:
         wrapped.append(current)
 
@@ -452,7 +490,7 @@ def add_text( asset_path, keyword_data, img, data ):
             default_color=dice_color,
             query_width=False )
 
-        # Draw dice
+        # Draw dice icon
         img.alpha_composite( dice_img,
                 dest=(TEXT_LEFT, current_offset_y + (height // 2) - (dice_img.height // 2)) )
 
@@ -478,17 +516,21 @@ def main(data_path, output_path, asset_path, keyword_path, is_mini=False):
     # Force redraws the psd instead of grabbing from the cache / buf
     img = psd.composite(force=True)
 
+    # Add custom title and text
     img = add_title( img, data )
     img = add_cost( asset_path, img, data )
 
     if is_mini:
+        # Crop the image to minify it
         img = img.crop( (MINI_LEFT, MINI_UP, MINI_RIGHT, MINI_DOWN) )
     else:
+        # Only need to add text if not mini (it would be entirely cropped otherwise)
         img = add_text( asset_path, keyword_data, img, data)
 
     img.save(output_path, format='PNG') # Finally, output to png
 
 def get_args():
+    # Parse command line using the built-in argparse library
     parser = argparse.ArgumentParser()
     parser.add_argument('data_path', type=str, help='Path to data to create a card')
     parser.add_argument('output_path', type=str, help='Path to output (ought to be a png file)')
