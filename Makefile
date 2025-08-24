@@ -17,8 +17,8 @@ default:
 clean:
 	rm -rf output/
 
-output/%_mini.png: data/%.json
+output/%_mini.png: data/%.json bin/generate_card.py
 	python bin/generate_card.py $< $@ -a ${ASSET_PATH} -k ${KEYWORD_PATH} -m
 
-output/%.png: data/%.json
+output/%.png: data/%.json bin/generate_card.py
 	python bin/generate_card.py $< $@ -a ${ASSET_PATH} -k ${KEYWORD_PATH} 
