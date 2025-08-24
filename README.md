@@ -113,29 +113,29 @@ This is how I arrived at embedding some icons in the text, Limbus Company style.
 # Acknowledgements
 
 From [tiphereth](tiphereth.zasz.su) and ultimately "Library of Ruina":
-    - various test images:
-        - `data/test/prepared_mind_lulu.jpg`
-        - `data/test/prepared_mind_mars.jpg`
-        - `data/test/degraded_shockwave.jpg`
-        - `data/test/repressed_flesh.jpg`
+- various test images:
+  - `data/test/prepared_mind_lulu.jpg`
+    - `data/test/prepared_mind_mars.jpg`
+    - `data/test/degraded_shockwave.jpg`
+    - `data/test/repressed_flesh.jpg`
 
 From the [Limbus Wiki](limbuscompany.wiki.gg) and ultimately "Limbus Company":
-    - various test images:
-        - `data/test/cinq_east_donquixote.png`
-        - `data/test/rosespanner_meursault_ut.png`
-        - `data/test/sunshower_heathcliff_ut.png`
-    - all of the icons in the `assets/limbus` folder, used for status effects in text
+- various test images:
+  - `data/test/cinq_east_donquixote.png`
+    - `data/test/rosespanner_meursault_ut.png`
+    - `data/test/sunshower_heathcliff_ut.png`
+- all of the icons in the `assets/limbus` folder, used for status effects in text
 
 From [This Google Drive Link](https://drive.google.com/drive/folders/12k2d_mPNzK6UfwFJcekXIiy3d1pJallO), and ultimately "Library of Ruina":
-    - I believe this is by the reddit user `u/Macrosis2020`. Thanks for your hard work and giving me a starting point!
-    - fonts:
-        - all fonts in the `assets/fonts` folder
-    - the photoshop `.psd` file:
-        - `assets/lor_template.psd`
-    - the grit for displaying over the light cost of a card
-        - `assets/cost_grit`
-    - the various dice icons in
-        - `assets/ruina`
+- I believe this is by the reddit user `u/Macrosis2020`. **Thank you so much** for your hard work and giving me a starting point!
+- fonts:
+  - all fonts in the `assets/fonts` folder
+  - the photoshop `.psd` file:
+    - `assets/lor_template.psd`
+  - the grit for displaying over the light cost of a card
+    - `assets/cost_grit`
+  - the various dice icons in
+    - `assets/ruina`
 
 Inspiration, in part by [This prototypical tool](https://github.com/Stiggu/LoR-Card-Generator/tree/master)
 
