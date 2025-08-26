@@ -16,8 +16,6 @@ from psd_tools import PSDImage
 from psd_tools.api.layers import PixelLayer
 from psd_tools.compression import Compression
 
-sys.path.insert(0,'%LocalAppData%/Microsoft/Windows/Fonts')
-
 # Constants
 COLOR_TITLE = "#000000"
 COLOR_COST = COLOR_TITLE
@@ -60,7 +58,7 @@ def find_font(name,size):
         joined_path = os.path.join(os.path.expandvars('%LocalAppData%/Microsoft/Windows/Fonts'),name)
         if os.path.isfile(joined_path):
             return PIL.ImageFont.truetype(joined_path,size)
-        else :
+        else:
             return PIL.ImageFont.truetype(name,size)
     else:
         return PIL.ImageFont.truetype(name,size)
