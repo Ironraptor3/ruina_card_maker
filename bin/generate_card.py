@@ -25,11 +25,11 @@ COLOR_DEFENSE = "#a1e3ee"
 COLOR_KEYWORD = "#efd521"
 COLORIZE_MIDPOINT = 127
 
-TITLE_TEXT_FONT = 'NanumMyeongjo.ttf'
+TITLE_TEXT_FONT = 'P22 Johnston Underground Regular.ttf'
 TITLE_TEXT_SIZE = 40
-DESC_TEXT_FONT = 'arial.ttf'
+DESC_TEXT_FONT = 'NotoSansDisplay-SemiCondensed.ttf'
 DESC_TEXT_SIZE = 32
-COST_TEXT_FONT = 'NanumMyeongjo.ttf'
+COST_TEXT_FONT = 'P22 Johnston Underground Regular.ttf'
 COST_TEXT_SIZE = 146
 
 TEXT_LEFT = 550
