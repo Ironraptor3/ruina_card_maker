@@ -28,7 +28,7 @@ Certainly the process is different on Windows (perhaps try clicking the files in
 
 With a terminal open with a working directory in this project's folder, try `python3 bin/generate_card.py --help`.
 
-Example command to make a card: `python3 data/test/degraded_shockwave.json degraded_shockwave.png`.
+Example command to make a card: `python3 bin/generate_card.py data/test/degraded_shockwave.json degraded_shockwave.png`.
 This command will create the `degraded_shockwave.png` file in your current folder.
 
 Breakdown of other possibilities:

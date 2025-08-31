@@ -53,6 +53,16 @@ MINI_DOWN = 700
 PSD_NAME = 'lor_template.psd'
 PSD_MD5 = '53ed4a18dbd596add12463898e6a95bd'
 
+def find_font(name,size):
+    if os.name=="nt":
+        joined_path = os.path.join(os.path.expandvars('%LocalAppData%/Microsoft/Windows/Fonts'),name)
+        if os.path.isfile(joined_path):
+            return PIL.ImageFont.truetype(joined_path,size)
+        else:
+            return PIL.ImageFont.truetype(name,size)
+    else:
+        return PIL.ImageFont.truetype(name,size)
+
 def init_data(parent_dir, file_path):
     path = os.path.join(parent_dir, file_path)
     with open(path, 'r') as path_fd:
@@ -215,7 +225,7 @@ def add_title(img, data):
     # To be safe, just create an image the size of the original
     text_layer = PIL.Image.new('RGBA', (img.width, img.height), color=(0,0,0,0))
     draw = PIL.ImageDraw.Draw(text_layer)
-    font = PIL.ImageFont.truetype(TITLE_TEXT_FONT, TITLE_TEXT_SIZE)
+    font = find_font(TITLE_TEXT_FONT, TITLE_TEXT_SIZE)
 
     center = ( TITLE_CENTER_X, TITLE_CENTER_Y )
     draw.multiline_text( center,
@@ -233,7 +243,7 @@ def add_title(img, data):
 
 def add_cost( asset_path, img, data ):
     draw = PIL.ImageDraw.Draw( img )
-    font = PIL.ImageFont.truetype( COST_TEXT_FONT, COST_TEXT_SIZE )
+    font = find_font( COST_TEXT_FONT, COST_TEXT_SIZE )
 
     cost_grit_path, cost_grit_stroke_fill = {
             'paperback' : ('cost_grit_paperback.png', '#9FE195'),
@@ -424,7 +434,7 @@ def wrap_keywords( draw, font, keywords, width ):
 
 def add_text( asset_path, keyword_data, img, data ):
     draw = PIL.ImageDraw.Draw( img )
-    font = PIL.ImageFont.truetype( DESC_TEXT_FONT, DESC_TEXT_SIZE )
+    font = find_font( DESC_TEXT_FONT, DESC_TEXT_SIZE )
     font_ascent, font_descent = font.getmetrics()
 
     # First, add the preamble, if it exists
